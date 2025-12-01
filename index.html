@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Grocery Pricing Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #3b82f6;
+      --accent-soft: #1d4ed8;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border: #111827;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      color: var(--text);
+    }
+    header {
+      padding: 0.85rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(15,23,42,0.95);
+      border-bottom: 1px solid #1f2937;
+      backdrop-filter: blur(12px);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(37,99,235,0.8);
+    }
+    header .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto 3.5rem auto;
+      padding: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0,2fr) minmax(0,1.1fr);
+      gap: 0.75rem;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: minmax(0,1fr); }
+    }
+    .card {
+      background: linear-gradient(135deg, rgba(15,23,42,0.98), rgba(15,23,42,0.96));
+      border-radius: var(--radius);
+      border: 1px solid #1f2937;
+      padding: 0.9rem;
+      box-shadow: 0 18px 40px rgba(15,23,42,0.8);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+    }
+    .card-header h2 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .btn {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+      transition: 0.12s ease;
+    }
+    .btn:hover {
+      background: var(--accent-soft);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(37,99,235,0.55);
+    }
+    .btn-ghost {
+      background: transparent;
+      border-color: #1f2937;
+      color: var(--muted);
+      box-shadow: none;
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: none;
+      box-shadow: none;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: var(--text);
+      font-size: 0.8rem;
+    }
+    input::placeholder { color: #6b7280; }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.15rem;
+    }
+    .field { margin-bottom: 0.6rem; }
+    .inline {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .inline .field { flex: 1; }
+    .store-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .store-chip {
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 0.2rem 0.6rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.78rem;
+      background: #020617;
+    }
+    .store-chip button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #6b7280;
+      font-size: 0.85rem;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+      margin: 0.6rem 0;
+    }
+    .toolbar-right {
+      margin-left: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .items-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+      gap: 0.6rem;
+    }
+    .item-card {
+      border-radius: 10px;
+      border: 1px solid #111827;
+      padding: 0.6rem;
+      background: radial-gradient(circle at top left, #020617, #020617);
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .item-main {
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+    .item-image {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: #6b7280;
+      background: #020617;
+      flex-shrink: 0;
+    }
+    .item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .item-title span.name {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .item-title span.meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      border: 1px solid rgba(59,130,246,0.4);
+      background: rgba(37,99,235,0.12);
+      color: #93c5fd;
+      font-size: 0.7rem;
+    }
+    .prices {
+      border-radius: 9px;
+      border: 1px dashed #1f2937;
+      padding: 0.4rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.3rem;
+    }
+    .price-row:last-child { margin-bottom: 0; }
+    .price-row span.store-name {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      min-width: 70px;
+    }
+    .price-row input {
+      flex: 1;
+      font-size: 0.78rem;
+      padding: 0.35rem 0.55rem;
+    }
+    .price-row .btn {
+      padding: 0.25rem 0.55rem;
+      font-size: 0.72rem;
+    }
+    .item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .small {
+      font-size: 0.7rem;
+      color: #6b7280;
+    }
+    .bulk-box {
+      border-radius: 10px;
+      border: 1px dashed rgba(59,130,246,0.6);
+      padding: 0.5rem;
+      margin-top: 0.4rem;
+      background: rgba(15,23,42,0.95);
+      font-size: 0.78rem;
+    }
+    .bulk-box strong { color: #93c5fd; }
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+      padding: 0.4rem;
+    }
+    .toast {
+      pointer-events: auto;
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.98);
+      border: 1px solid #1f2937;
+      font-size: 0.75rem;
+      display: none;
+    }
+    .toast.show {
+      display: inline-flex;
+      gap: 0.3rem;
+      align-items: center;
+      animation: fade 2.3s ease-out;
+    }
+    @keyframes fade {
+      0% { opacity: 0; transform: translateY(6px); }
+      15% { opacity: 1; transform: translateY(0); }
+      75% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(4px); }
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.8);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal {
+      background: #020617;
+      border-radius: 14px;
+      border: 1px solid #1f2937;
+      padding: 0.8rem;
+      width: min(520px, calc(100% - 1.5rem));
+      box-shadow: 0 22px 60px rgba(15,23,42,0.9);
+    }
+    .modal header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span class="dot"></span> Grocery Pricing</h1>
+    <div class="actions">
+      <button id="manual-sync" class="btn">⟳ Sync</button>
+      <button id="export-btn" class="btn btn-ghost">⬇ Export</button>
+      <label class="btn btn-ghost" for="import-input">
+        ⬆ Import
+        <input id="import-input" type="file" accept="application/json" style="display:none;">
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Basket & Items</h2>
+            <div class="muted">Track items across all your stores</div>
+          </div>
+          <div class="muted">Items: <span id="item-count">0</span></div>
+        </div>
+
+        <form id="add-item-form">
+          <div class="inline">
+            <div class="field">
+              <label for="item-name">Item name</label>
+              <input id="item-name" required placeholder="eg. Basmati Rice 10lb" />
+            </div>
+            <div class="field">
+              <label for="item-category">Category</label>
+              <input id="item-category" placeholder="eg. Rice" />
+            </div>
+          </div>
+          <div class="inline">
+            <div class="field">
+              <label for="item-image">Photo (optional)</label>
+              <input id="item-image" type="file" accept="image/*" style="font-size:0.75rem;" />
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn" style="width:100%;">＋ Add item</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="toolbar">
+          <button id="bulk-toggle" class="btn btn-ghost">✳ Bulk Edit: Off</button>
+        </div>
+
+        <div id="bulk-panel" class="bulk-box" style="display:none;">
+          <div><strong>Bulk edit</strong> <span class="muted" id="bulk-count">(0 selected)</span></div>
+          <div class="inline">
+            <div class="field">
+              <label>Set category for selected</label>
+              <input id="bulk-category" placeholder="New category" />
+            </div>
+            <div class="field">
+              <label>Store for bulk price</label>
+              <select id="bulk-store">
+                <option value="">Choose store</option>
+              </select>
+            </div>
+          </div>
+          <div class="inline">
+            <div class="field">
+              <label>Price for selected (that store)</label>
+              <input id="bulk-price" type="number" step="0.01" placeholder="eg. 12.49" />
+            </div>
+            <div class="field" style="display:flex;align-items:flex-end;gap:0.4rem;">
+              <button type="button" id="bulk-apply-category" class="btn" style="flex:1;">Apply category</button>
+              <button type="button" id="bulk-apply-price" class="btn" style="flex:1;">Apply price</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="items-list" class="items-list" style="margin-top:0.6rem;"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Stores & Settings</h2>
+            <div class="muted">Add/remove stores you shop at</div>
+          </div>
+        </div>
+
+        <form id="add-store-form">
+          <div class="inline">
+            <div class="field">
+              <label for="store-name">Store name</label>
+              <input id="store-name" required placeholder="eg. Costco, Walmart, Restaurant Depot" />
+            </div>
+            <div class="field" style="max-width:120px;">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn" style="width:100%;">＋ Add</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="field">
+          <label>Stores</label>
+          <div id="store-list" class="store-list"></div>
+        </div>
+
+        <hr style="border:none;border-top:1px dashed #1f2937;margin:0.8rem 0;" />
+
+        <div class="field">
+          <label>Import / Export</label>
+          <div class="muted">
+            Export = backup JSON of everything.  
+            Import = restore from that JSON.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Sync status</label>
+          <div id="sync-status" class="muted">Connecting to Firebase…</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div id="toast" class="toast">Saved</div>
+  </footer>
+
+  <div id="history-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <header>
+        <div>
+          <div id="history-title" style="font-size:0.9rem;font-weight:600;">Item</div>
+          <div id="history-sub" class="muted" style="font-size:0.75rem;"></div>
+        </div>
+        <button id="history-close" class="btn btn-ghost">Close</button>
+      </header>
+      <div class="field">
+        <label for="history-store-select">Store</label>
+        <select id="history-store-select"></select>
+      </div>
+      <canvas id="history-chart" height="180" style="margin-top:0.5rem;"></canvas>
+      <div id="history-empty" class="muted" style="font-size:0.75rem;margin-top:0.4rem;display:none;">
+        No price history yet for this store.
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs (you paste real ones from Firebase console here) -->
+  <!-- Example shape (versions may differ): 
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  -->
+  <!-- PASTE YOUR FIREBASE SCRIPT TAGS FROM CONSOLE BELOW THIS LINE -->
+  <!--  ----------------------------------------------  -->
+
+  <!-- Chart.js for graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // === Firebase config (replace with your own from Firebase) ===
+    const firebaseConfig = {
+      apiKey: "REPLACE_ME",
+      authDomain: "REPLACE_ME",
+      projectId: "REPLACE_ME",
+      storageBucket: "REPLACE_ME",
+      messagingSenderId: "REPLACE_ME",
+      appId: "REPLACE_ME"
+    };
+
+    if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "REPLACE_ME") {
+      console.warn("You still need to paste your real firebaseConfig here.");
+    }
+
+    // init Firebase (using compat SDK)
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    let stores = [];
+    let items = [];
+    let bulkMode = false;
+    const selectedItems = new Set();
+    let chart = null;
+    let currentHistoryItemId = null;
+
+    const storeCol = db.collection("stores");
+    const itemCol = db.collection("items");
+
+    function toast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    function formatDate(ts) {
+      if (!ts) return "";
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleString();
+    }
+
+    function getStoreName(id) {
+      const s = stores.find(st => st.id === id);
+      return s ? s.name : "Unknown";
+    }
+
+    function buildStoreOptions(select, includeBlank) {
+      select.innerHTML = "";
+      if (includeBlank) {
+        const o = document.createElement("option");
+        o.value = "";
+        o.textContent = "Choose store";
+        select.appendChild(o);
+      }
+      stores.forEach(s => {
+        const o = document.createElement("option");
+        o.value = s.id;
+        o.textContent = s.name;
+        select.appendChild(o);
+      });
+    }
+
+    function renderStores() {
+      const list = document.getElementById("store-list");
+      list.innerHTML = "";
+      stores.forEach(s => {
+        const chip = document.createElement("div");
+        chip.className = "store-chip";
+        chip.innerHTML = \`
+          <span>\${s.name}</span>
+          <button data-id="\${s.id}" title="Remove">✕</button>
+        \`;
+        list.appendChild(chip);
+      });
+
+      list.querySelectorAll("button[data-id]").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.currentTarget.getAttribute("data-id");
+          if (!confirm("Delete this store? It will not delete items, just the store itself.")) return;
+          await storeCol.doc(id).delete();
+          toast("Store deleted");
+        });
+      });
+
+      // update bulk store dropdown & history store dropdown later
+      buildStoreOptions(document.getElementById("bulk-store"), true);
+    }
+
+    function renderItems() {
+      const container = document.getElementById("items-list");
+      const count = document.getElementById("item-count");
+      container.innerHTML = "";
+      count.textContent = items.length;
+
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+
+        const prices = item.storePrices || {};
+        const checked = selectedItems.has(item.id);
+
+        let priceRows = "";
+        if (stores.length === 0) {
+          priceRows = '<div class="muted" style="font-size:0.75rem;">Add stores on the right to start pricing.</div>';
+        } else {
+          stores.forEach(s => {
+            const val = prices[s.id] != null ? prices[s.id] : "";
+            priceRows += \`
+              <div class="price-row" data-item-id="\${item.id}" data-store-id="\${s.id}">
+                <span class="store-name">\${s.name}</span>
+                <input type="number" step="0.01" value="\${val}" placeholder="Price" />
+                <button class="btn save-price">Save</button>
+              </div>
+            \`;
+          });
+        }
+
+        const last = item.updatedAt ? formatDate(item.updatedAt) : "Never";
+
+        card.innerHTML = \`
+          <div class="item-header">
+            <div class="item-main">
+              \${bulkMode ? \`<input type="checkbox" class="item-select" data-id="\${item.id}" \${checked ? "checked" : ""} />\` : ""}
+              <div class="item-image">
+                \${item.imageUrl ? \`<img src="\${item.imageUrl}" alt="\${item.name}">\` : "<span>No photo</span>"}
+              </div>
+              <div class="item-title">
+                <span class="name">\${item.name}</span>
+                <span class="meta">
+                  \${item.category ? \`<span class="tag">\${item.category}</span>\` : "<span class='muted'>No category</span>"}
+                </span>
+              </div>
+            </div>
+            <button class="btn-ghost btn delete-item" data-id="\${item.id}" title="Remove">✕</button>
+          </div>
+          <div class="prices">\${priceRows}</div>
+          <div class="item-footer">
+            <span class="small">Updated: \${last}</span>
+            <div style="display:flex;gap:0.35rem;">
+              <button class="btn btn-ghost history-btn" data-id="\${item.id}">📈 History</button>
+              <button class="btn btn-ghost photo-btn" data-id="\${item.id}">📷 Photo</button>
+            </div>
+          </div>
+        \`;
+
+        container.appendChild(card);
+      });
+
+      attachItemEvents();
+      updateBulkCount();
+    }
+
+    function attachItemEvents() {
+      document.querySelectorAll(".delete-item").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const id = e.currentTarget.getAttribute("data-id");
+          if (!confirm("Delete this item?")) return;
+          await itemCol.doc(id).delete();
+          selectedItems.delete(id);
+          toast("Item deleted");
+        });
+      });
+
+      document.querySelectorAll(".item-select").forEach(cb => {
+        cb.addEventListener("change", (e) => {
+          const id = e.currentTarget.getAttribute("data-id");
+          if (e.currentTarget.checked) {
+            selectedItems.add(id);
+          } else {
+            selectedItems.delete(id);
+          }
+          updateBulkCount();
+        });
+      });
+
+      document.querySelectorAll(".save-price").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const row = e.currentTarget.closest(".price-row");
+          const itemId = row.getAttribute("data-item-id");
+          const storeId = row.getAttribute("data-store-id");
+          const val = row.querySelector("input").value;
+          const price = val ? parseFloat(val) : null;
+          await updatePrice(itemId, storeId, price);
+          toast("Price saved");
+        });
+      });
+
+      document.querySelectorAll(".photo-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const id = e.currentTarget.getAttribute("data-id");
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = async () => {
+            const file = input.files[0];
+            if (!file) return;
+            await uploadPhoto(id, file);
+            toast("Photo updated");
+          };
+          input.click();
+        });
+      });
+
+      document.querySelectorAll(".history-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const id = e.currentTarget.getAttribute("data-id");
+          openHistory(id);
+        });
+      });
+    }
+
+    async function updatePrice(itemId, storeId, price) {
+      const ref = itemCol.doc(itemId);
+      const snap = await ref.get();
+      if (!snap.exists) return;
+      const data = snap.data();
+      const storePrices = data.storePrices || {};
+      const history = data.priceHistory || [];
+
+      if (price == null || isNaN(price)) {
+        delete storePrices[storeId];
+      } else {
+        storePrices[storeId] = price;
+        history.push({
+          storeId,
+          price,
+          date: new Date()
+        });
+      }
+
+      await ref.update({
+        storePrices,
+        priceHistory: history,
+        updatedAt: new Date()
+      });
+    }
+
+    async function uploadPhoto(itemId, file) {
+      const ref = storage.ref("productImages/" + itemId + "-" + Date.now());
+      await ref.put(file);
+      const url = await ref.getDownloadURL();
+      await itemCol.doc(itemId).update({
+        imageUrl: url,
+        updatedAt: new Date()
+      });
+    }
+
+    function initRealtime() {
+      storeCol.orderBy("name").onSnapshot(
+        snap => {
+          stores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderStores();
+          renderItems();
+          document.getElementById("sync-status").textContent = "Connected (live sync)";
+        },
+        err => {
+          document.getElementById("sync-status").textContent = "Error: " + err.message;
+        }
+      );
+      itemCol.orderBy("name").onSnapshot(
+        snap => {
+          items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderItems();
+        }
+      );
+    }
+
+    function setBulkMode(on) {
+      bulkMode = on;
+      document.getElementById("bulk-panel").style.display = on ? "block" : "none";
+      document.getElementById("bulk-toggle").textContent = on ? "✳ Bulk Edit: On" : "✳ Bulk Edit: Off";
+      if (!on) selectedItems.clear();
+      renderItems();
+    }
+
+    function updateBulkCount() {
+      document.getElementById("bulk-count").textContent = "(" + selectedItems.size + " selected)";
+    }
+
+    async function applyBulkCategory() {
+      const val = document.getElementById("bulk-category").value.trim();
+      if (!val) { alert("Enter a category first."); return; }
+      if (!selectedItems.size) { alert("Select at least one item."); return; }
+      const updates = [];
+      selectedItems.forEach(id => {
+        updates.push(itemCol.doc(id).update({ category: val, updatedAt: new Date() }));
+      });
+      await Promise.all(updates);
+      toast("Category applied");
+      document.getElementById("bulk-category").value = "";
+    }
+
+    async function applyBulkPrice() {
+      const storeId = document.getElementById("bulk-store").value;
+      const val = document.getElementById("bulk-price").value;
+      if (!storeId) { alert("Choose a store."); return; }
+      if (!val) { alert("Enter a price."); return; }
+      const price = parseFloat(val);
+      if (isNaN(price)) { alert("Price must be a number."); return; }
+      if (!selectedItems.size) { alert("Select at least one item."); return; }
+      const tasks = [];
+      selectedItems.forEach(id => {
+        tasks.push(updatePrice(id, storeId, price));
+      });
+      await Promise.all(tasks);
+      toast("Price applied");
+      document.getElementById("bulk-price").value = "";
+    }
+
+    async function manualSync() {
+      const [sSnap, iSnap] = await Promise.all([storeCol.get(), itemCol.get()]);
+      stores = sSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      items = iSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderStores();
+      renderItems();
+      toast("Manual sync done");
+    }
+
+    async function exportData() {
+      const [sSnap, iSnap] = await Promise.all([storeCol.get(), itemCol.get()]);
+      const data = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        stores: sSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+        items: iSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "grocery-pricing-export.json";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("Exported");
+    }
+
+    async function importData(file) {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!data || !data.stores || !data.items) {
+        alert("Not a valid backup file.");
+        return;
+      }
+      if (!confirm("Importing will overwrite documents with the same IDs. Continue?")) return;
+
+      const batch = db.batch();
+      data.stores.forEach(s => {
+        const { id, ...rest } = s;
+        const ref = storeCol.doc(id || undefined);
+        batch.set(ref, rest);
+      });
+      data.items.forEach(it => {
+        const { id, ...rest } = it;
+        const ref = itemCol.doc(id || undefined);
+        batch.set(ref, rest);
+      });
+      await batch.commit();
+      toast("Import complete");
+    }
+
+    function openHistory(itemId) {
+      const item = items.find(i => i.id === itemId);
+      if (!item) return;
+      currentHistoryItemId = itemId;
+
+      document.getElementById("history-title").textContent = item.name;
+      document.getElementById("history-sub").textContent = item.category ? "Category: " + item.category : "No category.";
+
+      const select = document.getElementById("history-store-select");
+      buildStoreOptions(select, false);
+      select.onchange = renderHistoryChart;
+
+      if (stores.length) select.value = stores[0].id;
+
+      renderHistoryChart();
+      document.getElementById("history-backdrop").classList.add("show");
+    }
+
+    function closeHistory() {
+      document.getElementById("history-backdrop").classList.remove("show");
+      if (chart) { chart.destroy(); chart = null; }
+      currentHistoryItemId = null;
+    }
+
+    function renderHistoryChart() {
+      const item = items.find(i => i.id === currentHistoryItemId);
+      if (!item) return;
+      const storeId = document.getElementById("history-store-select").value;
+      const allHist = (item.priceHistory || []).filter(h => h.storeId === storeId);
+      const sorted = allHist.slice().sort((a,b) => new Date(a.date) - new Date(b.date));
+
+      const empty = document.getElementById("history-empty");
+      const ctx = document.getElementById("history-chart").getContext("2d");
+
+      if (!sorted.length) {
+        empty.style.display = "block";
+      } else {
+        empty.style.display = "none";
+      }
+
+      const labels = sorted.map(h => {
+        const d = new Date(h.date);
+        return d.toLocaleDateString();
+      });
+      const values = sorted.map(h => h.price);
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: getStoreName(storeId) + " price",
+            data: values,
+            tension: 0.2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color: "#e5e7eb", font: { size: 11 } }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: "#9ca3af" },
+              grid: { color: "#111827" }
+            },
+            y: {
+              ticks: { color: "#9ca3af" },
+              grid: { color: "#111827" }
+            }
+          }
+        }
+      });
+    }
+
+    function initEvents() {
+      document.getElementById("add-store-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const input = document.getElementById("store-name");
+        const name = input.value.trim();
+        if (!name) return;
+        await storeCol.add({ name, createdAt: new Date() });
+        input.value = "";
+        toast("Store added");
+      });
+
+      document.getElementById("add-item-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById("item-name");
+        const catInput = document.getElementById("item-category");
+        const fileInput = document.getElementById("item-image");
+
+        const name = nameInput.value.trim();
+        const category = catInput.value.trim();
+        if (!name) return;
+
+        const docRef = await itemCol.add({
+          name,
+          category: category || "",
+          imageUrl: null,
+          storePrices: {},
+          priceHistory: [],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        const file = fileInput.files[0];
+        if (file) {
+          await uploadPhoto(docRef.id, file);
+        }
+
+        nameInput.value = "";
+        catInput.value = "";
+        fileInput.value = "";
+        toast("Item added");
+      });
+
+      document.getElementById("bulk-toggle").addEventListener("click", () => setBulkMode(!bulkMode));
+      document.getElementById("bulk-apply-category").addEventListener("click", applyBulkCategory);
+      document.getElementById("bulk-apply-price").addEventListener("click", applyBulkPrice);
+
+      document.getElementById("manual-sync").addEventListener("click", manualSync);
+      document.getElementById("export-btn").addEventListener("click", exportData);
+
+      document.getElementById("import-input").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        await importData(file);
+        e.target.value = "";
+      });
+
+      document.getElementById("history-close").addEventListener("click", closeHistory);
+      document.getElementById("history-backdrop").addEventListener("click", (e) => {
+        if (e.target.id === "history-backdrop") closeHistory();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initEvents();
+      initRealtime();
+    });
+  </script>
+</body>
+</html>
